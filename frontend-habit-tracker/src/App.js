@@ -1,30 +1,11 @@
 import React from "react";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import "./App.css";
 
 import Habit from "./components/Habit";
+import AddHabit from './components/AddHabit';
 
-
-export const HABITS_QUERY = gql`
-  query HABITS_QUERY {
-    habits {
-      id
-      description
-      points
-      entries {
-        id
-        notes
-        date
-        completed
-      }
-    }
-
-    totalPoints {
-      points
-      totalCompletedEntries
-    }
-  }
-`;
+import { HABITS_QUERY } from './gql/query';
 
 function App() {
   const { data, loading, error } = useQuery(HABITS_QUERY);
@@ -50,6 +31,7 @@ function App() {
           Total Points: {totalPoints.points} (
           {totalPoints.totalCompletedEntries} {entryString})
         </p>
+        <AddHabit/>
       </div>
       <ul className="habit-list">
         {habits.map((habit) => {
