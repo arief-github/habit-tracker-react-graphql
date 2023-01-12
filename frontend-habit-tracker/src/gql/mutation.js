@@ -16,4 +16,13 @@ const CREATE_HABIT_MUTATION = gql`
   }
 `;
 
-export { CREATE_HABIT_MUTATION };
+const DELETE_HABIT_MUTATION = gql` 
+	mutation DELETE_HABIT($id: ID!) {
+	    deleteHabit(id: $id) {
+	      success
+	    }
+ 	}
+
+`
+
+export { CREATE_HABIT_MUTATION, DELETE_HABIT_MUTATION };
