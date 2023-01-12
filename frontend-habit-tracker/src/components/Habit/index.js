@@ -5,7 +5,8 @@ import { HABITS_QUERY } from '../../gql/query';
 
 function Habit({ habit }) {
 	const [deleteHabit, { error, loading }] = useMutation(DELETE_HABIT_MUTATION, {
-		refetchQueries: [{ query: HABITS_QUERY }]
+		refetchQueries: [{ query: HABITS_QUERY }],
+		awaitRefetchQueries: true,
 	});
 
 	return (
