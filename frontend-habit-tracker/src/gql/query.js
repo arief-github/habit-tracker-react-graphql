@@ -21,4 +21,16 @@ const HABITS_QUERY = gql`
   }
 `;
 
-export { HABITS_QUERY };
+const ENTRIES_QUERY = gql`
+  query ENTRIES_QUERY($id: ID!) {
+    getEntriesByHabitId(id: $id) {
+      id
+      notes
+      completed
+      date
+      habitId
+    }
+  }
+`
+
+export { HABITS_QUERY, ENTRIES_QUERY };

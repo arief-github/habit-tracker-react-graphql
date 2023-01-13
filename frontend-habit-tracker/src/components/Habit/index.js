@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { useMutation } from '@apollo/client';
+import { useMutation, useLazyQuery } from '@apollo/client';
 import { DELETE_HABIT_MUTATION } from '../../gql/mutation';
-import { HABITS_QUERY } from '../../gql/query';
+import { HABITS_QUERY, ENTRIES_QUERY  } from '../../gql/query';
 
-import EditHabit from '../EditHabit'
+import EditHabit from '../EditHabit';
+import AddEntry from '../AddEntry';
+import Entry from '../Entry';
 
 function Habit({ habit }) {
 	const [showEditForm, setShowEditForm] = useState(false);
-	const [deleteHabit, { error, loading }] = useMutation(DELETE_HABIT_MUTATION, {
-		refetchQueries: [{ query: HABITS_QUERY }],
-		awaitRefetchQueries: true,
-	});
+	const [showAddEntryForm, setShowAddEntryForm] = useState(false);
+	const [deleteHabit, { error, loading }] = useMutation(DELETE_HABIT_MUTATION);
+	const [loadEntries, { data: entriesData }] = useLazyQuery(ENTRIES_QUERY);
+
+	const entries = entriesData && entriesData.getEntriesByHabitId ? entriesData.getEntriesByHabitId : [];
 
 	return (
 		<li style={{ color: error ? 'red' : 'black' }}>
@@ -37,29 +40,65 @@ function Habit({ habit }) {
 			   			</button>
 			   			<button
 							type="button"
-							onClick={() => deleteHabit({ variables: { id: habit.id } })}
+							onClick={() => { 
+								const habitIdToDelete = habit.id
+								deleteHabit({
+									variables: { id: habitIdToDelete },
+									update: (cache, { data }) => {
+										const { habits } = cache.readQuery({ query: HABITS_QUERY });
+										cache.writeQuery({
+											query: HABITS_QUERY,
+											data: { habits: habits.filter((habit) => habit.id !== habitIdToDelete), },
+										})
+									}
+								})
+							}}
 							disabled={loading}
 						>
 						Delete
 						</button> 
+						<button
+							type="button"
+							onClick={() => loadEntries({ variables: { id: habit.id } })}
+						>
+							Entries	
+						</button>
 			   		</>
 			   		
 			   	) : (
 			   		<EditHabit habit={habit} onEditSuccess={() => setShowEditForm(false)}/>
 			   	)
 			   }
-			<ul>
 				{
-					habit.entries && 
-						habit.entries.map((entry) => {
-							const date = new Date(entry.date).toLocaleDateString();
-							const completed = entry.completed ?  "✅" : "😑";
-							return (
-								<li key={entry.id}>{`${date}: ${entry.notes} ${completed}`}</li>
-							)
-						})
+					entries.length > 0 && (
+						<ul>
+							{entries.map((entry) => {
+								const lastEntry = entries.indexOf(entry) === entries.length - 1;
+								return (
+									<Entry 
+										key={entry.id}
+										entry={entry}
+										lastEntry={lastEntry}
+										showEntryForm={() => setShowAddEntryForm(true)}/>
+								)
+							})}
+						</ul>
+					)
 				}
-			</ul>
+			{entries.length === 0 && !showAddEntryForm && (
+					<button
+						type="button"
+						className="blue-button"
+						style={{display: "block"}}
+						onClick={() => setShowAddEntryForm(true)}
+					>
+						Add Entry
+					</button>
+				)}
+				<AddEntry 
+					show={showAddEntryForm}
+					habitId={habit.id}
+					onAddEntrySuccess={() => setShowAddEntryForm(false)}/>
 		</li>
 	)
 }

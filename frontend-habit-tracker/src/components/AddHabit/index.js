@@ -7,7 +7,15 @@ function AddHabit() {
 	const [description, setDescription] = useState(null);
 	const descriptionInput = useRef(null);
 	const [createHabit, { error, loading }] = useMutation(CREATE_HABIT_MUTATION, {
-		refetchQueries: [ { query: HABITS_QUERY } ],
+		update: (cache, { data: { createHabit } }) => {
+			// read the data from cache
+			const { habits } = cache.readQuery({ query: HABITS_QUERY });
+			// update the cache with the new data
+			cache.writeQuery({
+				query: HABITS_QUERY,
+				data: { habits: habits.concat([createHabit]) },
+			})
+		}
 	});
 
 	const handleChange = () => {
