@@ -22,7 +22,23 @@ const DELETE_HABIT_MUTATION = gql`
 	      success
 	    }
  	}
+`;
 
-`
+const UPDATE_HABIT_MUTATION = gql`
+	  mutation UPDATE_HABIT_MUTATION($input: UpdateHabitInput) {
+	    updateHabit(input: $input) {
+	      id
+	      description
+	      points
+	      entries {
+	        id
+	        notes
+	        date
+	        completed
+	      }
+	    }
+	  }
+`;
 
-export { CREATE_HABIT_MUTATION, DELETE_HABIT_MUTATION };
+
+export { CREATE_HABIT_MUTATION, DELETE_HABIT_MUTATION, UPDATE_HABIT_MUTATION };

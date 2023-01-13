@@ -1,9 +1,12 @@
-import React from 'react';
-import {useMutation} from '@apollo/client';
+import React, { useState } from 'react';
+import { useMutation } from '@apollo/client';
 import { DELETE_HABIT_MUTATION } from '../../gql/mutation';
 import { HABITS_QUERY } from '../../gql/query';
 
+import EditHabit from '../EditHabit'
+
 function Habit({ habit }) {
+	const [showEditForm, setShowEditForm] = useState(false);
 	const [deleteHabit, { error, loading }] = useMutation(DELETE_HABIT_MUTATION, {
 		refetchQueries: [{ query: HABITS_QUERY }],
 		awaitRefetchQueries: true,
@@ -18,14 +21,33 @@ function Habit({ habit }) {
 			          </span>{" "}
 			        </>
 			      )}
-			{ ` ${habit.description} ${habit.points} points` }
-			<button
-				type="button"
-				onClick={() => deleteHabit({ variables: { id: habit.id } })}
-				disabled={loading}
-			>
-				Delete
-			</button>
+			   {
+			   	!showEditForm ? (
+			   		<>
+			   			{habit.description} ({habit.points} points)
+			   			<button
+			   				className="emoji-button"
+			   				type="button"
+			   				onClick={() => setShowEditForm(true)}
+			   				alt="Edit Habit"
+			   			>
+			   				<span role="img" aria-label="pencil emoji">
+			   					✏
+			   				</span>
+			   			</button>
+			   			<button
+							type="button"
+							onClick={() => deleteHabit({ variables: { id: habit.id } })}
+							disabled={loading}
+						>
+						Delete
+						</button> 
+			   		</>
+			   		
+			   	) : (
+			   		<EditHabit habit={habit} onEditSuccess={() => setShowEditForm(false)}/>
+			   	)
+			   }
 			<ul>
 				{
 					habit.entries && 
